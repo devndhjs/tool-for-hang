@@ -44,7 +44,15 @@ async function downloadImage(imageUrl, alt, index, folderPath) {
 async function scrapeImagesFromUrl(url, folderPath, wait) {
   const browser = await puppeteer.launch({
     headless: "new",
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-accelerated-2d-canvas",
+      "--disable-gpu",
+      "--single-process",
+      "--no-zygote",
+    ],
   });
 
   const page = await browser.newPage();
