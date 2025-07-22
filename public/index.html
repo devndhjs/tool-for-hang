@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Scraper</title>
+  </head>
+  <body>
+    <h1>🖼️ Scrape Ảnh từ URL</h1>
+    <form id="scrape-form">
+      <textarea
+        rows="10"
+        cols="80"
+        placeholder="Dán danh sách URL mỗi dòng..."
+        id="url-list"
+      ></textarea
+      ><br />
+      <label>⏱️ Thời gian chờ sau khi scroll (ms): </label>
+      <input type="number" id="wait-time" value="5000" min="100" /><br /><br />
+      <button type="submit">Tải ảnh về</button>
+    </form>
+    <p id="status"></p>
+
+    <script>
+      const form = document.getElementById("scrape-form");
+      const status = document.getElementById("status");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const urls = document
+          .getElementById("url-list")
+          .value.trim()
+          .split("\n")
+          .map((u) => u.trim())
+          .filter(Boolean);
+        if (urls.length === 0) {
+          status.textContent = "⚠️ Vui lòng nhập ít nhất một URL.";
+          return;
+        }
+        const waitTime =
+          parseInt(document.getElementById("wait-time").value) || 5000;
+
+        status.textContent = "⏳ Đang xử lý, vui lòng đợi...";
+        try {
+          const res = await fetch("/download-images", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ urls, wait: waitTime }),
+          });
+
+          if (!res.ok) {
+            throw new Error("Tải thất bại");
+          }
+
+          const blob = await res.blob();
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = "images.zip";
+          a.click();
+          status.textContent = "✅ Đã tải xong!";
+        } catch (err) {
+          console.error(err);
+          status.textContent = "❌ Có lỗi xảy ra.";
+        }
+      });
+    </script>
+  </body>
+</html>
