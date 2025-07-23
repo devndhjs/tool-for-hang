@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Image Downloader</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 20px;
+      }
+      input {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+      }
+      button {
+        padding: 8px 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Image Downloader</h2>
+    <input id="urlInput" placeholder="Nhập URL cần tải ảnh" />
+    <button onclick="download()">Download</button>
+    <div id="status"></div>
+    <script src="renderer.js"></script>
+  </body>
+</html>

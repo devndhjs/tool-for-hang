@@ -3,7 +3,7 @@ import path from "path";
 import puppeteer from "puppeteer";
 import fs from "fs";
 
-function sanitizeFileName(name: string) {
+function sanitizeFileName(name) {
   return name
     .toLowerCase()
     .normalize("NFD")
@@ -13,12 +13,7 @@ function sanitizeFileName(name: string) {
     .substring(0, 50);
 }
 
-async function downloadImage(
-  imageUrl: string,
-  alt: any,
-  index: number,
-  folderPath: any
-) {
+async function downloadImage(imageUrl, alt, index, folderPath) {
   const cleanName = sanitizeFileName(alt || "image");
   const fileExt = path.extname(imageUrl.split("?")[0]) || ".jpg";
   const fileName = `${cleanName}-${index}${fileExt}`;
@@ -38,11 +33,7 @@ async function downloadImage(
   });
 }
 
-export async function scrapeImagesFromUrl(
-  url: string,
-  folderPath: any,
-  wait: any
-) {
+export async function scrapeImagesFromUrl(url, folderPath, wait) {
   const browser = await puppeteer.launch({
     headless: "new",
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -51,23 +42,18 @@ export async function scrapeImagesFromUrl(
   const page = await browser.newPage();
   await page.setViewport({ width: 1920, height: 1080 });
   await page.goto(url, { waitUntil: "networkidle2" });
-
-  // await page.evaluate(() => {
-  //   window.scrollTo(0, document.body.scrollHeight);
-  // });
   await new Promise((r) => setTimeout(r, Number(wait || 3000)));
 
   const wrappers = await page.$$(".image-wrapper");
   for (let i = 0; i < wrappers.length; i++) {
     await wrappers[i].click();
-    // await new Promise((r) => setTimeout(r,  300));
   }
 
   const imageInfos = await page.evaluate(() => {
     const imgs = document.querySelectorAll(
       ".zoom-image-container.main-image img"
     );
-    const list: any[] = [];
+    const list = [];
     imgs.forEach((img) => {
       const src = img.getAttribute("src") || img.getAttribute("data-src");
       const alt = img.getAttribute("alt") || "image";
