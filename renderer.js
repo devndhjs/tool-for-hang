@@ -1,6 +1,10 @@
 window.addEventListener("DOMContentLoaded", () => {
   console.log("DOMContentLoaded!");
   console.log("window.electronAPI:", window.electronAPI);
+  if (!window.electronAPI) {
+    document.getElementById("status").innerText = "❌ Lỗi: preload chưa chạy!";
+    return;
+  }
   document.querySelector("button").addEventListener("click", download);
 });
 

@@ -6,11 +6,9 @@ import archiver from "archiver";
 import { scrapeImagesFromUrl } from "./src/dkhardware.js";
 import { fileURLToPath } from "url";
 
-// 👇 Khai báo __dirname và __filename vì đang dùng ES module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Hàm zip folder
 function zipDirectory(sourceDir, outPath) {
   const archive = archiver("zip", { zlib: { level: 9 } });
   const stream = fs.createWriteStream(outPath);
@@ -22,22 +20,23 @@ function zipDirectory(sourceDir, outPath) {
   });
 }
 
-// Tạo cửa sổ Electron
 async function createWindow() {
+  const preloadPath = path.join(__dirname, "preload.js");
+  console.log("👉 preloadPath:", preloadPath); // thêm log kiểm tra
+
   const win = new BrowserWindow({
     width: 600,
     height: 400,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"), // dùng __dirname chuẩn
-      contextIsolation: true, // bắt buộc
-      nodeIntegration: false, // bắt buộc
+      preload: preloadPath,
+      contextIsolation: true,
+      nodeIntegration: false,
     },
   });
 
   await win.loadFile("index.html");
 }
 
-// Xử lý IPC từ renderer
 ipcMain.handle("start-download", async (event, url) => {
   console.log("Bắt đầu download:", url);
   const wait = 3000;
@@ -61,7 +60,4 @@ ipcMain.handle("start-download", async (event, url) => {
   }
 });
 
-// Khởi động app
-app.whenReady().then(() => {
-  createWindow();
-});
+app.whenReady().then(createWindow);
