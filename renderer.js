@@ -1,3 +1,9 @@
+window.addEventListener("DOMContentLoaded", () => {
+  console.log("DOMContentLoaded!");
+  console.log("window.electronAPI:", window.electronAPI);
+  document.querySelector("button").addEventListener("click", download);
+});
+
 async function download() {
   const url = document.getElementById("urlInput").value;
   document.getElementById("status").innerText = "⏳ Đang tải...";
