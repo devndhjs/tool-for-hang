@@ -62,55 +62,50 @@ function getImagesScript() {
   `;
 }
 
-async function scrapeImagesFromUrl(url, folderPath, wait) {
-  const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext();
-  const page = await context.newPage();
+async function scrapeImagesFromUrl(browser, url, folderPath, wait) {
+  const page = await browser.newPage();
 
   await page.goto(url, { waitUntil: "networkidle" });
   await page.setViewportSize({ width: 1920, height: 1080 });
 
   await delay(wait || 3000);
 
-  try {
-    const closeBtn = await page.$("#alia-wc914syg6np7o49n svg");
-    if (closeBtn) {
-      await closeBtn.click();
-      // console.log("✅ Đã đóng popup.");
-      // await delay(500); // đợi một chút sau khi đóng
-    }
-  } catch (e) {
-    console.warn("⚠️ Không thể đóng popup:", e.message);
-  }
+  // try {
+  //   const closeBtn = await page.$('[aria-label="Close popup"]');
+  //   if (closeBtn) {
+  //     await closeBtn.click();
+  //     // console.log("✅ Đã đóng popup.");
+  //     // await delay(500); // đợi một chút sau khi đóng
+  //   }
+  // } catch (e) {
+  //   console.warn("⚠️ Không thể đóng popup:", e.message);
+  // }
 
   const wrappers = await page.$$(".image-wrapper");
   for (const wrapper of wrappers) {
     try {
-      await wrapper.click();
+      await wrapper.click({ force: true });
       // await delay(300);
     } catch (e) {
-      console.warn("Không click được wrapper:", e.message);
+      console.warn("Không click được wrapper:" + url, e.message);
     }
   }
 
   const imageInfos = await page.evaluate(getImagesScript());
 
-  await browser.close();
+  // const downloadedFiles = [];
 
-  const downloadedFiles = [];
-
-  for (let i = 0; i < imageInfos.length; i++) {
-    const { src, alt } = imageInfos[i];
-    const cleanName = sanitizeFileName(alt || "image");
-    const ext = path.extname(src.split("?")[0]) || ".jpg";
-    const fileName = `${cleanName}-${i + 1}${ext}`;
-    const filePath = path.join(folderPath, fileName);
-
-    await downloadImage(src, filePath);
-    downloadedFiles.push(filePath);
-  }
-
-  return downloadedFiles;
+  await Promise.all(
+    imageInfos.map(({ src, alt }, i) => {
+      const cleanName = sanitizeFileName(alt || "image");
+      const ext = path.extname(src.split("?")[0]) || ".jpg";
+      const fileName = `${cleanName}-${i + 1}${ext}`;
+      const filePath = path.join(folderPath, fileName);
+      return downloadImage(src, filePath);
+    })
+  );
+  await page.close();
+  return true;
 }
 
 module.exports = { scrapeImagesFromUrl };

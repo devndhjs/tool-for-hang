@@ -4,6 +4,7 @@ const path = require("path");
 const archiver = require("archiver");
 const os = require("os");
 const crypto = require("crypto");
+const { chromium } = require("playwright"); // Dùng Chromium
 const { scrapeImagesFromUrl } = require("./src/dkhardware");
 
 const app = express();
@@ -32,11 +33,13 @@ app.post("/download-images", async (req, res) => {
   const sessionId = crypto.randomUUID();
   const tempDir = path.join(os.tmpdir(), `scrape-${sessionId}`);
   fs.mkdirSync(tempDir);
+  const browser = await chromium.launch({ headless: true });
 
   try {
     await Promise.all(
-      urls.map((url) => scrapeImagesFromUrl(url, tempDir, wait))
+      urls.map((url) => scrapeImagesFromUrl(browser, url, tempDir, wait))
     );
+    await browser.close();
 
     const zipPath = path.join(os.tmpdir(), `images-${sessionId}.zip`);
     await zipDirectory(tempDir, zipPath);
