@@ -16,37 +16,47 @@
       ></textarea
       ><br />
       <label>⏱️ Thời gian chờ sau khi scroll (ms): </label>
-      <input type="number" id="wait-time" value="5000" min="100" /><br /><br />
-      <button type="submit">Tải ảnh về</button>
+      <input
+        type="number"
+        id="wait-time"
+        value="5000"
+        min="100"
+      /><br /><br /><button type="submit" id="download-btn">Tải ảnh về</button>
     </form>
     <p id="status"></p>
 
     <script>
       const form = document.getElementById("scrape-form");
       const status = document.getElementById("status");
+      const downloadBtn = document.getElementById("download-btn");
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
+
         const urls = document
           .getElementById("url-list")
           .value.trim()
           .split("\n")
           .map((u) => u.trim())
           .filter(Boolean);
+
         if (urls.length === 0) {
           status.textContent = "⚠️ Vui lòng nhập ít nhất một URL.";
           return;
         }
+
         const waitTime =
           parseInt(document.getElementById("wait-time").value) || 5000;
 
+        // Disable nút và hiển thị loading
+        downloadBtn.disabled = true;
+        downloadBtn.textContent = "⏳ Đang tải...";
         status.textContent = "⏳ Đang xử lý, vui lòng đợi...";
+
         try {
           const res = await fetch("/download-images", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ urls, wait: waitTime }),
           });
 
@@ -59,10 +69,15 @@
           a.href = URL.createObjectURL(blob);
           a.download = "images.zip";
           a.click();
+
           status.textContent = "✅ Đã tải xong!";
         } catch (err) {
           console.error(err);
           status.textContent = "❌ Có lỗi xảy ra.";
+        } finally {
+          // Bật lại nút
+          downloadBtn.disabled = false;
+          downloadBtn.textContent = "Tải ảnh về";
         }
       });
     </script>
